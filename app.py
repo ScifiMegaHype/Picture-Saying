@@ -9,9 +9,8 @@ import psycopg
 from psycopg.rows import dict_row
 from flask import Flask, jsonify, render_template_string, request, send_from_directory, session
 
-from dotenv import load_dotenv
-
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 # ---------------- CONFIG (all plain variables, edit here) ----------------
 # Set both of these as environment variables on Render (never hard-code them).
