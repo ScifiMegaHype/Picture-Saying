@@ -9,11 +9,10 @@ import psycopg
 from psycopg.rows import dict_row
 from flask import Flask, jsonify, render_template_string, request, send_from_directory, session
 
+# When running locally
 # from dotenv import load_dotenv
 # load_dotenv()
 
-# ---------------- CONFIG (all plain variables, edit here) ----------------
-# Set both of these as environment variables on Render (never hard-code them).
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 DATABASE_URL = os.environ["DATABASE_URL"]  # Neon connection string
 IMAGE_DIR = "images"
@@ -25,6 +24,11 @@ PUZZLES = {
     "2026-10-29": {"image": "2026-10-29.png", "answer": "Foreign Exchange"},
     "2026-10-30": {"image": "2026-10-30.png", "answer": "Pink Slip"},
     "2026-10-31": {"image": "2026-10-31.png", "answer": "Ice breaker"},
+    "2026-11-01": {"image": "2026-10-30.png", "answer": "Forget"},
+    "2026-11-02": {"image": "2026-10-30.png", "answer": "Step father"},
+    "2026-11-03": {"image": "2026-10-30.png", "answer": "Try to understand"},
+    "2026-11-04": {"image": "2026-10-30.png", "answer": "Top secret"},
+    "2026-11-05": {"image": "2026-10-30.png", "answer": "Plot Twist"},
     "2026-11-06": {"image": "2026-10-30.png", "answer": "Internet Explorer"},
 }
 FALLBACK_DATE = "2026-10-29"  # used if today has no puzzle yet
@@ -37,11 +41,9 @@ ABSENT = "absent"
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
-
 def get_db():
     """Open a Neon connection. Use `with get_db() as db:` - it commits and closes on exit."""
     return psycopg.connect(DATABASE_URL, row_factory=dict_row) # type: ignore
-
 
 def init_db():
     with get_db() as db:
@@ -59,11 +61,9 @@ def init_db():
             "CREATE INDEX IF NOT EXISTS scores_date_seconds ON scores (puzzle_date, seconds)"
         )
 
-
 def today_key():
     key = date.today().isoformat()
     return key if key in PUZZLES else FALLBACK_DATE
-
 
 def normalize(text):
     """Case-insensitive, ignores punctuation and extra spaces."""
@@ -91,16 +91,13 @@ def score_guess(guess_words, answer_words):
 
     return hints
 
-
 @app.route("/")
 def index():
     return render_template_string(PAGE, word_count=len(PUZZLES[today_key()]["answer"].split()))
 
-
 @app.route("/image")
 def image():
     return send_from_directory(IMAGE_DIR, PUZZLES[today_key()]["image"])
-
 
 @app.route("/start", methods=["POST"])
 def start():
@@ -111,12 +108,11 @@ def start():
     if session.get("done_" + key):
         return jsonify(error="You already finished today's puzzle"), 400
     session["name"] = name
-    # Keep the original start time if they refresh mid-game.
+
     session.setdefault("start_" + key, time.time())
     session["guesses_" + key] = session.get("guesses_" + key, 0)
     elapsed = time.time() - session["start_" + key]
     return jsonify(ok=True, elapsed=elapsed, word_count=len(PUZZLES[today_key()]["answer"].split()))
-
 
 @app.route("/guess", methods=["POST"])
 def guess():
@@ -157,7 +153,6 @@ def leaderboard():
             (key, LEADERBOARD_SIZE),
         ).fetchall()
     return jsonify(rows)
-
 
 PAGE = """
 <!doctype html>
