@@ -219,10 +219,20 @@ async function sendGuess(){
   });
   $('history').prepend(row); $('guess').value='';
 }
+function formatTime(totalSeconds) {
+  const total = Math.round(totalSeconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
+}
+
 async function loadBoard(){
   const rows = await (await fetch('/leaderboard')).json();
   $('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
-    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.seconds}s</td><td>${r.guesses}</td></tr>`).join('');
+    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
 }
 loadBoard();
 </script>
