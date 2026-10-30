@@ -193,7 +193,7 @@ async function post(url, body){
   const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   return r.json();
 }
-function tick(){ $('timer').textContent = ((Date.now()-startMs)/1000).toFixed(1)+'s'; }
+function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
 
 async function startGame(){
   const data = await post('/start',{name:$('name').value});
@@ -208,7 +208,7 @@ async function sendGuess(){
   if(data.error){ alert(data.error); return; }
   if(data.correct){
     clearInterval(ticker);
-    $('timer').textContent = 'Solved in '+data.seconds+'s ('+data.guesses+' guesses)';
+    $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
     $('play').style.display='none'; loadBoard(); return;
   }
   const row = document.createElement('div'); row.className='row';
