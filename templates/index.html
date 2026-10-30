@@ -1,0 +1,83 @@
+<!doctype html>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Picture Saying</title>
+    <style>
+    body{font-family:system-ui;max-width:480px;margin:0 auto;padding:16px;text-align:center}
+    img{width:100%;border-radius:12px;display:none}
+    input,button{font-size:1rem;padding:10px;margin:4px 0;width:100%;box-sizing:border-box}
+    .row{display:flex;gap:4px;justify-content:center;margin:4px 0}
+    .w{padding:4px 8px;border-radius:6px;background:#ccc}
+    .w.ok{background:#6aaa64;color:#fff}
+    .w.present{background:#c9b458;color:#fff}
+    .w.contains{background:#e8892b;color:#fff}
+    #timer{font-size:1.6rem;margin:8px 0}
+    table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
+    </style>
+    <h2>Picture Saying</h2>
+    <div id="setup">
+    <input id="name" placeholder="Your name" maxlength="20">
+    <button onclick="startGame()">Start</button>
+    </div>
+    <div id="timer"></div>
+    <img id="pic" src="/image">
+    <div id="play" style="display:none">
+    <p>{{ word_count }} words</p>
+    <input id="guess" placeholder="Type the saying" onkeydown="if(event.key==='Enter')sendGuess()">
+    <button onclick="sendGuess()">Guess</button>
+    <div id="history"></div>
+    </div>
+    <h3>Today's leaderboard</h3>
+    <table id="board"></table>
+
+    <script>
+    let startMs = null, ticker = null;
+    const $ = id => document.getElementById(id);
+
+    async function post(url, body){
+    const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    return r.json();
+    }
+    function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
+
+    async function startGame(){
+    const data = await post('/start',{name:$('name').value});
+    if(data.error){ alert(data.error); return; }
+    startMs = Date.now() - data.elapsed*1000;   // resume if page refreshed
+    ticker = setInterval(tick, 100);
+    $('setup').style.display='none'; $('pic').style.display='block'; $('play').style.display='block';
+    }
+    async function sendGuess(){
+    const g = $('guess').value; if(!g.trim()) return;
+    const data = await post('/guess',{guess:g});
+    if(data.error){ alert(data.error); return; }
+    if(data.correct){
+        clearInterval(ticker);
+        $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
+        $('play').style.display='none'; loadBoard(); return;
+    }
+    const row = document.createElement('div'); row.className='row';
+    data.words.forEach((w,i)=>{
+        const s=document.createElement('span');
+        s.className='w ' + data.hints[i];
+        s.textContent=w; row.appendChild(s);
+    });
+    $('history').prepend(row); $('guess').value='';
+    }
+    function formatTime(totalSeconds) {
+    const total = Math.round(totalSeconds);
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
+    }
+
+    async function loadBoard(){
+    const rows = await (await fetch('/leaderboard')).json();
+    $('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
+        rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
+    }
+    loadBoard();
+    </script>
+</html>

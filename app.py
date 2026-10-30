@@ -7,7 +7,7 @@ from datetime import date
 
 import psycopg
 from psycopg.rows import dict_row
-from flask import Flask, jsonify, render_template_string, request, send_from_directory, session
+from flask import Flask, jsonify, render_template, request, send_from_directory, session
 
 # When running locally
 # from dotenv import load_dotenv
@@ -17,10 +17,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 DATABASE_URL = os.environ["DATABASE_URL"]  # Neon connection string
 IMAGE_DIR = "images"
 LEADERBOARD_SIZE = 10
-TIMEZONE_NOTE = "Puzzle date uses the server's local date."
 
 # One entry per day. Key = YYYY-MM-DD. Answer stays on the server only.
-PUZZLES = {
+PUZZLES = { # Server date is used
     "2026-10-29": {"image": "2026-10-29.png", "answer": "Foreign Exchange"},
     "2026-10-30": {"image": "2026-10-30.png", "answer": "Pink Slip"},
     "2026-10-31": {"image": "2026-10-31.png", "answer": "Ice breaker"},
@@ -109,7 +108,7 @@ def score_guess(guess_words, answer_words):
 
 @app.route("/")
 def index():
-    return render_template_string(PAGE, word_count=len(PUZZLES[today_key()]["answer"].split()))
+    return render_template("index.html", word_count=len(PUZZLES[today_key()]["answer"].split()))
 
 @app.route("/image")
 def image():
@@ -165,95 +164,10 @@ def leaderboard():
     with get_db() as db:
         rows = db.execute(
             "SELECT name, seconds, guesses FROM scores WHERE puzzle_date = %s "
-            "ORDER BY seconds ASC LIMIT %s",
+            "ORDER BY seconds ASC, guesses ASC LIMIT %s",
             (key, LEADERBOARD_SIZE),
         ).fetchall()
     return jsonify(rows)
-
-PAGE = """
-<!doctype html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Picture Saying</title>
-<style>
-  body{font-family:system-ui;max-width:480px;margin:0 auto;padding:16px;text-align:center}
-  img{width:100%;border-radius:12px;display:none}
-  input,button{font-size:1rem;padding:10px;margin:4px 0;width:100%;box-sizing:border-box}
-  .row{display:flex;gap:4px;justify-content:center;margin:4px 0}
-  .w{padding:4px 8px;border-radius:6px;background:#ccc}
-  .w.ok{background:#6aaa64;color:#fff}
-  .w.present{background:#c9b458;color:#fff}
-  .w.contains{background:#e8892b;color:#fff}
-  #timer{font-size:1.6rem;margin:8px 0}
-  table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
-</style>
-<h2>Picture Saying</h2>
-<div id="setup">
-  <input id="name" placeholder="Your name" maxlength="20">
-  <button onclick="startGame()">Start</button>
-</div>
-<div id="timer"></div>
-<img id="pic" src="/image">
-<div id="play" style="display:none">
-  <p>{{ word_count }} words</p>
-  <input id="guess" placeholder="Type the saying" onkeydown="if(event.key==='Enter')sendGuess()">
-  <button onclick="sendGuess()">Guess</button>
-  <div id="history"></div>
-</div>
-<h3>Today's leaderboard</h3>
-<table id="board"></table>
-
-<script>
-let startMs = null, ticker = null;
-const $ = id => document.getElementById(id);
-
-async function post(url, body){
-  const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  return r.json();
-}
-function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
-
-async function startGame(){
-  const data = await post('/start',{name:$('name').value});
-  if(data.error){ alert(data.error); return; }
-  startMs = Date.now() - data.elapsed*1000;   // resume if page refreshed
-  ticker = setInterval(tick, 100);
-  $('setup').style.display='none'; $('pic').style.display='block'; $('play').style.display='block';
-}
-async function sendGuess(){
-  const g = $('guess').value; if(!g.trim()) return;
-  const data = await post('/guess',{guess:g});
-  if(data.error){ alert(data.error); return; }
-  if(data.correct){
-    clearInterval(ticker);
-    $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
-    $('play').style.display='none'; loadBoard(); return;
-  }
-  const row = document.createElement('div'); row.className='row';
-  data.words.forEach((w,i)=>{
-    const s=document.createElement('span');
-    s.className='w ' + data.hints[i];
-    s.textContent=w; row.appendChild(s);
-  });
-  $('history').prepend(row); $('guess').value='';
-}
-function formatTime(totalSeconds) {
-  const total = Math.round(totalSeconds);
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const seconds = total % 60;
-
-  const pad = n => String(n).padStart(2, '0');
-  return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
-}
-
-async function loadBoard(){
-  const rows = await (await fetch('/leaderboard')).json();
-  $('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
-    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
-}
-loadBoard();
-</script>
-"""
 
 init_db()
 
