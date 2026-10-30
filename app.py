@@ -114,6 +114,17 @@ def index():
 def image():
     return send_from_directory(IMAGE_DIR, PUZZLES[today_key()]["image"])
 
+@app.route("/state")
+def state():
+    key = today_key()
+    start_time = session.get("start_" + key)
+    return jsonify(
+        started=start_time is not None,
+        done=bool(session.get("done_" + key)),
+        name=session.get("name", ""),
+        elapsed=(time.time() - start_time) if start_time else 0,
+    )
+
 @app.route("/start", methods=["POST"])
 def start():
     key = today_key()
@@ -172,4 +183,5 @@ def leaderboard():
 init_db()
 
 if __name__ == "__main__":
+    DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
     app.run(debug=True)
