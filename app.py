@@ -34,9 +34,11 @@ PUZZLES = {
 FALLBACK_DATE = "2026-10-29"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
 
-CORRECT = "ok"
-PRESENT = "present"
-ABSENT = "absent"
+CORRECT = "ok"          # green
+PRESENT = "present"     # yellow
+CONTAINS = "contains"   # orange
+ABSENT = "absent"       # grey
+MIN_CONTAINED_LENGTH = 3  # ignore tiny answer words like "a" or "is"
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -88,6 +90,20 @@ def score_guess(guess_words, answer_words):
         if remaining[guess_word] > 0:
             hints[i] = PRESENT
             remaining[guess_word] -= 1
+
+    # Pass 3: guess word contains an unmatched answer word (orange)
+    for i, guess_word in enumerate(guess_words):
+        if hints[i] != ABSENT:
+            continue
+        for answer_word in remaining:
+            if (
+                remaining[answer_word] > 0
+                and len(answer_word) >= MIN_CONTAINED_LENGTH
+                and answer_word in guess_word
+            ):
+                hints[i] = CONTAINS
+                remaining[answer_word] -= 1
+                break
 
     return hints
 
@@ -166,6 +182,7 @@ PAGE = """
   .w{padding:4px 8px;border-radius:6px;background:#ccc}
   .w.ok{background:#6aaa64;color:#fff}
   .w.present{background:#c9b458;color:#fff}
+  .w.contains{background:#e8892b;color:#fff}
   #timer{font-size:1.6rem;margin:8px 0}
   table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
 </style>
