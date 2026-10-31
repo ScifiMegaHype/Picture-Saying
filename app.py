@@ -23,12 +23,12 @@ PUZZLES = { # Server date is used
     "2026-10-29": {"image": "2026-10-29.png", "answer": "Foreign Exchange"},
     "2026-10-30": {"image": "2026-10-30.png", "answer": "Pink Slip"},
     "2026-10-31": {"image": "2026-10-31.png", "answer": "Ice breaker"},
-    "2026-11-01": {"image": "2026-10-30.png", "answer": "Forget"},
-    "2026-11-02": {"image": "2026-10-30.png", "answer": "Step father"},
-    "2026-11-03": {"image": "2026-10-30.png", "answer": "Try to understand"},
-    "2026-11-04": {"image": "2026-10-30.png", "answer": "Top secret"},
-    "2026-11-05": {"image": "2026-10-30.png", "answer": "Plot Twist"},
-    "2026-11-06": {"image": "2026-10-30.png", "answer": "Internet Explorer"},
+    "2026-11-01": {"image": "2026-11-01.png", "answer": "Forget"},
+    "2026-11-02": {"image": "2026-11-02.png", "answer": "Step father"},
+    "2026-11-03": {"image": "2026-11-03.png", "answer": "Try to understand"},
+    "2026-11-04": {"image": "2026-11-04.png", "answer": "Top secret"},
+    "2026-11-05": {"image": "2026-11-05.png", "answer": "Plot Twist"},
+    "2026-11-06": {"image": "2026-11-06.png", "answer": "Internet Explorer"},
 }
 FALLBACK_DATE = "2026-10-29"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
