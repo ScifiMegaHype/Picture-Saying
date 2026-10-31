@@ -143,6 +143,7 @@ function openHelp(beforeStart, compact){
   $('helpBody').style.display = compact ? 'none' : 'block';
   $('compactIntro').style.display = compact ? 'block' : 'none';
   $('hideHelp').checked = loadSettings().hideHowToPlay;
+  $('hideHelpRow').style.display = beforeStart ? 'block' : 'none';
   $('nameRow').style.display = beforeStart ? 'block' : 'none';
   $('helpClose').style.display = beforeStart ? 'none' : 'block';
   $('helpAction').textContent = beforeStart ? 'Start Guessing' : 'Back to game';
