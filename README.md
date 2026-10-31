@@ -119,4 +119,4 @@ Most of the lessons came from hosting, not from the game logic.
 
 ## Feedback
 
-Tell me which saying, movie or song you would turn into a picture. The best ideas may become future puzzles.
+Give as much as you want
