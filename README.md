@@ -1,6 +1,6 @@
 # Picture Saying
 
-A daily puzzle game: guess the saying, movie, song or celebrity name hidden in a single picture. It is Wordle crossed with a visual riddle, and the fastest solver tops the leaderboard. The riddles are heavily influenced by the TheEzzShow (https://www.youtube.com/@TheEzzShow)
+A daily puzzle game: guess the saying, movie, song or celebrity name hidden in a single picture. It is Wordle crossed with a visual riddle, and the fastest solver tops the leaderboard. The riddles are heavily influenced by TheEzzShow (https://www.youtube.com/@TheEzzShow)
 
 **Play it:** https://picture-saying.onrender.com/
 
