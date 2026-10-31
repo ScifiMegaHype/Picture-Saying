@@ -8,9 +8,9 @@ input,button{font-size:1rem;padding:10px;margin:4px 0;width:100%;box-sizing:bord
 .row{display:flex;gap:4px;justify-content:center;margin:4px 0}
 .w{padding:4px 8px;border-radius:6px;background:#ccc}
 .w.ok{background:#6aaa64;color:#fff}
-.w.present{background:#d5c168;color:#fff}
+.w.present{background:#c9b458;color:#fff}
 .w.contains{background:#de6e52d8;color:#fff}
-.w.absent{background:#ccc;color:#fff}
+.w.absent{background:#787c7e;color:#fff}
 #timer{font-size:1.6rem;margin:8px 0}
 table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
 
@@ -31,6 +31,9 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 #helpBtn {display:none;flex:3;background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor: pointer;}
 #guessBtn {flex:7;background:#6aaa64;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer;}
 .button-container {width:100%;gap:8px;display: flex /* 30 70 split for the buttons */;}
+#hideHelpRow{display:flex;align-items:center;gap:8px;font-size:.95rem;margin:8px 0;cursor:pointer}
+#hideHelp{width:auto;margin:0}
+#showHelpBtn{background:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer}
 </style>
 
 <h2>Picture Saying</h2>
@@ -53,6 +56,15 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 <div id="help">
   <div class="card">
     <button id="helpClose" onclick="closeHelp()" aria-label="Close" style="display:none">&times;</button>
+
+    <!-- Short version, shown when the player chose to hide the instructions -->
+    <div id="compactIntro" style="display:none">
+      <h2>Ready to play?</h2>
+      <p>Enter your name, then press Start Guessing.</p>
+      <button id="showHelpBtn" onclick="expandHelp()">Show How To Play</button>
+    </div>
+
+    <div id="helpBody">
     <h2>How To Play</h2>
     <p>Guess the phrase or saying shown in the picture.</p>
     <p>The answer can be a phrase, saying, movie, song, celebrity name, ect; from hereon refered to as "saying".</p>
@@ -82,8 +94,13 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
       <div class="row"><span class="w ok">pink</span><span class="w absent">pink</span></div>
       <small>Duplicate words are counted only once</small>
     </div>
+    </div><!-- /helpBody -->
 
     <hr>
+    <label id="hideHelpRow">
+      <input type="checkbox" id="hideHelp" onchange="saveSetting('hideHowToPlay', this.checked)">
+      Don't show the instructions when I start
+    </label>
     <div id="nameRow">
       <input id="name" placeholder="Your name" maxlength="20" onkeydown="if(event.key==='Enter')helpAction()">
     </div>
@@ -101,10 +118,31 @@ return r.json();
 }
 function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
 
+// ---- Settings (saved in this browser's localStorage) ----
+const SETTINGS_KEY = 'pictureSaying.settings';
+const DEFAULT_SETTINGS = { hideHowToPlay: false };
+
+function loadSettings(){
+  try {
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+  } catch(e) { return { ...DEFAULT_SETTINGS }; }   // storage blocked or corrupted: use defaults
+}
+function saveSetting(key, value){
+  try {
+    const settings = loadSettings();
+    settings[key] = value;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch(e) {}                                    // storage blocked (e.g. private mode): ignore
+}
+
 // ---- How to play ----
-function openHelp(beforeStart){
+function openHelp(beforeStart, compact){
   // beforeStart = true: first visit (name box + Start Guessing, cannot be closed)
   // beforeStart = false: opened mid-game (just a Close button, timer keeps running)
+  // compact = true: skip the instructions (player chose to hide them) but keep name + Start
+  $('helpBody').style.display = compact ? 'none' : 'block';
+  $('compactIntro').style.display = compact ? 'block' : 'none';
+  $('hideHelp').checked = loadSettings().hideHowToPlay;
   $('nameRow').style.display = beforeStart ? 'block' : 'none';
   $('helpClose').style.display = beforeStart ? 'none' : 'block';
   $('helpAction').textContent = beforeStart ? 'Start Guessing' : 'Back to game';
@@ -112,6 +150,10 @@ function openHelp(beforeStart){
   if (beforeStart) $('name').focus();
 }
 function closeHelp(){ $('help').classList.remove('open'); }
+function expandHelp(){                       // "Show How To Play" in the short version
+  $('helpBody').style.display = 'block';
+  $('compactIntro').style.display = 'none';
+}
 function helpAction(){
   if (gameStarted) closeHelp(); else startGame();
 }
@@ -150,7 +192,7 @@ if (state.started) {                 // refreshed mid-game: skip How To Play, ti
   return;
 }
 $('name').value = state.name || '';  // new visitor (or a new day): show How To Play first
-openHelp(true);
+openHelp(true, loadSettings().hideHowToPlay);   // ...unless they chose to hide it
 }
 async function sendGuess(){
 const g = $('guess').value; if(!g.trim()) return;
