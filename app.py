@@ -110,6 +110,10 @@ def score_guess(guess_words, answer_words):
 def index():
     return render_template("index.html", word_count=len(PUZZLES[today_key()]["answer"].split()))
 
+@app.route("/health")
+def health():
+    return "ok"
+
 @app.route("/image")
 def image():
     return send_from_directory(IMAGE_DIR, PUZZLES[today_key()]["image"])
