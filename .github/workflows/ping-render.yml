@@ -1,0 +1,13 @@
+name: Pings render web service to keep service awake
+
+on:
+  schedule:
+    - cron: "*/13 * * * *"
+  workflow_dispatch:   
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: curl --fail --silent --show-error --max-time 60 "${{ secrets.APP_URL }}/health"
