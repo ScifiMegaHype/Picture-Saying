@@ -23,7 +23,7 @@ PUZZLES = { # Server date is used
     "2026-10-29": {"image": "2026-10-29.png", "answer": "Foreign Exchange"},
     "2026-10-30": {"image": "2026-10-30.png", "answer": "Pink Slip"},
     "2026-10-31": {"image": "2026-10-31.png", "answer": "Ice breaker"},
-    "2026-11-01": {"image": "2026-11-01.png", "answer": "Forget"},
+    "2026-11-01": {"image": "2026-11-01.png", "answer": "Forget it"},
     "2026-11-02": {"image": "2026-11-02.png", "answer": "Step father"},
     "2026-11-03": {"image": "2026-11-03.png", "answer": "Try to understand"},
     "2026-11-04": {"image": "2026-11-04.png", "answer": "Top secret"},
