@@ -34,13 +34,14 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 #hideHelpRow{display:flex;align-items:center;gap:8px;font-size:.95rem;margin:8px 0;cursor:pointer}
 #hideHelp{width:auto;margin:0}
 #showHelpBtn{background:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer}
+#shareBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
 </style>
 
 <h2>Picture Saying</h2>
 
 <div id="timer"></div>
 <img id="pic" src="/image">
-<div id="play" style="display:none">
+<div id="play" style="display:none" data-words="{{ word_count }}">
 <p>{{ word_count }} words</p>
 <input id="guess" placeholder="Type the saying" oninput="limitWords(this, maxGuessWords, maxGuessChars)" onkeydown="if(event.key==='Enter')sendGuess()">
 <div class="button-container">
@@ -48,6 +49,9 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
     <button id="guessBtn" onclick="sendGuess()">Guess</button>
 </div>
 <div id="history"></div>
+</div>
+<div id="shareBox" style="display:none">
+<button id="shareBtn" onclick="copyResult()">Copy result</button>
 </div>
 <h3>Today's leaderboard</h3>
 <table id="board"></table>
@@ -112,7 +116,11 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 let startMs = null, ticker = null, gameStarted = false;
 let maxGuessWords = 10;
 let maxGuessChars = 50
+const SQUARES = { ok: '🟩', present: '🟨', contains: '🟧', absent: '⬜' };
+let guessLog = [];                        // hints of every wrong guess, oldest first
+let shareText = '';
 const $ = id => document.getElementById(id);
+const ANSWER_WORDS = Number($('play').dataset.words);   // words in the saying (one green square each)
 
 async function post(url, body){
 const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -216,6 +224,7 @@ function limitWords(input, maxWords, maxChars) {
 
 // Draw one coloured row of words (used for new guesses and when restoring after a refresh)
 function addGuessRow(words, hints){
+guessLog.push(hints);
 const row = document.createElement('div'); row.className='row';
 words.forEach((w,i)=>{
     const s=document.createElement('span');
@@ -235,11 +244,48 @@ if(data.error){ alert(data.error); return; }
 if(data.correct){
     clearInterval(ticker);
     $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
-    $('play').style.display='none'; loadBoard(); return;
+    $('play').style.display='none'; loadBoard();
+    buildShareText(data.guesses, data.seconds);
+    $('shareBox').style.display='block';
+    return;
 }
 addGuessRow(data.words, data.hints);
 $('guess').value='';
 }
+// ---- Share ----
+// Same as formatTime but leaves out the hours when they are zero: "01min 42s"
+function shortTime(totalSeconds) {
+const full = formatTime(totalSeconds);
+return full.startsWith('00h ') ? full.slice(4) : full;
+}
+
+const SHARE_MAX_ROWS = 5;   // how many guesses go into the copied text
+
+function buildShareText(guesses, seconds){
+const lines = guessLog.map(hints => hints.map(h => SQUARES[h]).join(''));
+lines.push(SQUARES.ok.repeat(ANSWER_WORDS));          // the winning guess is all green
+const shownLines = lines.slice(-SHARE_MAX_ROWS);      // keep only the last 5 guesses
+if (guesses > SHARE_MAX_ROWS) shownLines.unshift('…'); // earlier guesses were left out
+const label = guesses === 1 ? 'guess' : 'guesses';
+shareText = 'https://picture-saying.onrender.com/\nPicture Saying · ' + guesses + ' ' + label + ' · ' + shortTime(seconds) + '\n' + shownLines.join('\n');
+}
+
+async function copyResult(){
+const button = $('shareBtn');
+try {
+  await navigator.clipboard.writeText(shareText);
+} catch(e) {                                           // older browsers / non-https: use a hidden textarea
+  const box = document.createElement('textarea');
+  box.value = shareText;
+  document.body.appendChild(box);
+  box.select();
+  document.execCommand('copy');
+  box.remove();
+}
+button.textContent = 'Copied!';
+setTimeout(() => { button.textContent = 'Copy result'; }, 2000);
+}
+
 function formatTime(totalSeconds) {
 const total = Math.round(totalSeconds);
 const hours = Math.floor(total / 3600);
@@ -263,7 +309,7 @@ const head = table.insertRow();
 rows.forEach((r, i) => {
     const tr = table.insertRow();
     [i + 1, r.name, formatTime(r.seconds), r.guesses].forEach(value => {
-        tr.insertCell().textContent = value;  // removing ability to inject HTML like befores
+        tr.insertCell().textContent = value;  // removing ability to inject HTML like before
     });
 });
 }

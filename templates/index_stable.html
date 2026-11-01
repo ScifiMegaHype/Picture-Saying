@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 <img id="pic" src="/image">
 <div id="play" style="display:none">
 <p>{{ word_count }} words</p>
-<input id="guess" placeholder="Type the saying" onkeydown="if(event.key==='Enter')sendGuess()">
+<input id="guess" placeholder="Type the saying" oninput="limitWords(this, maxGuessWords, maxGuessChars)" onkeydown="if(event.key==='Enter')sendGuess()">
 <div class="button-container">
     <button id="helpBtn" onclick="openHelp(false)">How to play</button>
     <button id="guessBtn" onclick="sendGuess()">Guess</button>
@@ -110,6 +110,8 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 
 <script>
 let startMs = null, ticker = null, gameStarted = false;
+let maxGuessWords = 10;
+let maxGuessChars = 50
 const $ = id => document.getElementById(id);
 
 async function post(url, body){
@@ -183,6 +185,8 @@ async function init(){
 loadBoard();
 let state = {started:false, done:false, name:'', elapsed:0};
 try { state = await (await fetch('/state')).json(); } catch(e) {}
+if (state.max_words) maxGuessWords = state.max_words;
+if (state.max_chars) maxGuessChars = state.max_chars;
 
 if (state.done) {                    // already solved today's puzzle
   $('timer').textContent = "You've already finished today's puzzle. Come back tomorrow!";
@@ -190,13 +194,42 @@ if (state.done) {                    // already solved today's puzzle
 }
 if (state.started) {                 // refreshed mid-game: skip How To Play, timer keeps counting
   beginPlay(state.elapsed);
+  (state.history || []).forEach(h => addGuessRow(h.words, h.hints));   // put earlier guesses back
   return;
 }
 $('name').value = state.name || '';  // new visitor (or a new day): show How To Play first
 openHelp(true, loadSettings().hideHowToPlay);   // ...unless they chose to hide it
 }
+// Stop the guess box from holding more than `max` characters and words (also catches pasted text)
+function limitWords(input, maxWords, maxChars) {
+    // Limit the total number of characters
+    if (input.value.length > maxChars) {
+        input.value = input.value.slice(0, maxChars);
+    }
+
+    // Limit the number of words
+    const words = input.value.match(/\S+/g) || [];
+    if (words.length > maxWords) {
+        input.value = words.slice(0, maxWords).join(' ');
+    }
+}
+
+// Draw one coloured row of words (used for new guesses and when restoring after a refresh)
+function addGuessRow(words, hints){
+const row = document.createElement('div'); row.className='row';
+words.forEach((w,i)=>{
+    const s=document.createElement('span');
+    s.className='w ' + hints[i];
+    s.textContent=w; row.appendChild(s);
+});
+$('history').prepend(row);
+}
+
 async function sendGuess(){
 const g = $('guess').value; if(!g.trim()) return;
+if (g.trim().split(/\s+/).length > maxGuessWords) {
+  alert('Guesses can have at most ' + maxGuessWords + ' words.'); return;
+}
 const data = await post('/guess',{guess:g});
 if(data.error){ alert(data.error); return; }
 if(data.correct){
@@ -204,13 +237,8 @@ if(data.correct){
     $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
     $('play').style.display='none'; loadBoard(); return;
 }
-const row = document.createElement('div'); row.className='row';
-data.words.forEach((w,i)=>{
-    const s=document.createElement('span');
-    s.className='w ' + data.hints[i];
-    s.textContent=w; row.appendChild(s);
-});
-$('history').prepend(row); $('guess').value='';
+addGuessRow(data.words, data.hints);
+$('guess').value='';
 }
 function formatTime(totalSeconds) {
 const total = Math.round(totalSeconds);
@@ -224,8 +252,20 @@ return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
 
 async function loadBoard(){
 const rows = await (await fetch('/leaderboard')).json();
-$('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
-    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
+const table = $('board');
+table.textContent = '';                       // clear the old rows
+const head = table.insertRow();
+['#', 'Name', 'Time', 'Guesses'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    head.appendChild(th);
+});
+rows.forEach((r, i) => {
+    const tr = table.insertRow();
+    [i + 1, r.name, formatTime(r.seconds), r.guesses].forEach(value => {
+        tr.insertCell().textContent = value;  // removing ability to inject HTML like before
+    });
+});
 }
 init();
 </script>
