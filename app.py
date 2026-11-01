@@ -39,6 +39,12 @@ CONTAINS = "contains"   # orange
 ABSENT = "absent"       # grey
 MIN_CONTAINED_LENGTH = 3  # ignore tiny answer words like "a" or "is"
 
+MAX_GUESS_WORDS = 9
+MAX_GUESS_CHARS = 50
+MAX_HISTORY = 5
+HINT_CODES = {CORRECT: "o", PRESENT: "p", CONTAINS: "c", ABSENT: "a"}
+HINT_NAMES = {code: name for name, code in HINT_CODES.items()}
+
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
@@ -127,6 +133,12 @@ def state():
         done=bool(session.get("done_" + key)),
         name=session.get("name", ""),
         elapsed=(time.time() - start_time) if start_time else 0,
+        max_words=max(MAX_GUESS_WORDS, len(normalize(PUZZLES[key]["answer"]).split())),
+        max_chars=max(MAX_GUESS_CHARS, len(normalize(PUZZLES[key]["answer"]))),
+        history=[
+            {"words": words.split(), "hints": [HINT_NAMES[c] for c in codes]}
+            for words, codes in session.get("history_" + key, [])
+        ][-MAX_HISTORY:],        
     )
 
 @app.route("/start", methods=["POST"])
@@ -142,6 +154,10 @@ def start():
     session.setdefault("start_" + key, time.time())
     session["guesses_" + key] = session.get("guesses_" + key, 0)
     elapsed = time.time() - session["start_" + key]
+
+    for old in [k for k in session if k.startswith("history_") and k != "history_" + key]:
+        session.pop(old)
+
     return jsonify(ok=True, elapsed=elapsed, word_count=len(PUZZLES[today_key()]["answer"].split()))
 
 @app.route("/guess", methods=["POST"])
@@ -159,6 +175,19 @@ def guess():
 
     session["guesses_" + key] += 1
 
+    # Wordle-style hint: which word positions are right
+    hints = score_guess(guess_words, answer_words)
+
+    # Save the guess and its hints in session history
+    hint_codes = [
+        HINT_CODES[hint] if hint in HINT_CODES else hint
+        for hint in hints
+    ]
+    history_key = "history_" + key
+    guess_history = session.get(history_key, [])
+    guess_history.append((" ".join(guess_words), hint_codes))
+    session[history_key] = guess_history
+    
     if guess_words == answer_words:
         seconds = round(time.time() - start_time, 2)
         session["done_" + key] = True
@@ -167,10 +196,8 @@ def guess():
                 "INSERT INTO scores (puzzle_date, name, seconds, guesses) VALUES (%s, %s, %s, %s)",
                 (key, str(session["name"])+str(randint(9999, 99999)), seconds, session["guesses_" + key]),
             )
-        return jsonify(correct=True, seconds=seconds, guesses=session["guesses_" + key])
+        return jsonify(correct=True, seconds=seconds, guesses=session["guesses_" + key], hints=hints, words=guess_words,)
 
-    # Wordle-style hint: which word positions are right
-    hints = score_guess(guess_words, answer_words)
     return jsonify(correct=False, hints=hints, words=guess_words)
 
 @app.route("/leaderboard")

@@ -1,83 +1,231 @@
 <!doctype html>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Picture Saying</title>
-    <style>
-    body{font-family:system-ui;max-width:480px;margin:0 auto;padding:16px;text-align:center}
-    img{width:100%;border-radius:12px;display:none}
-    input,button{font-size:1rem;padding:10px;margin:4px 0;width:100%;box-sizing:border-box}
-    .row{display:flex;gap:4px;justify-content:center;margin:4px 0}
-    .w{padding:4px 8px;border-radius:6px;background:#ccc}
-    .w.ok{background:#6aaa64;color:#fff}
-    .w.present{background:#c9b458;color:#fff}
-    .w.contains{background:#e8892b;color:#fff}
-    #timer{font-size:1.6rem;margin:8px 0}
-    table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
-    </style>
-    <h2>Picture Saying</h2>
-    <div id="setup">
-    <input id="name" placeholder="Your name" maxlength="20">
-    <button onclick="startGame()">Start</button>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Picture Saying</title>
+<style>
+body{font-family:system-ui;max-width:480px;margin:0 auto;padding:16px;text-align:center}
+img{width:100%;border-radius:12px;display:none}
+input,button{font-size:1rem;padding:10px;margin:4px 0;width:100%;box-sizing:border-box}
+.row{display:flex;gap:4px;justify-content:center;margin:4px 0}
+.w{padding:4px 8px;border-radius:6px;background:#ccc}
+.w.ok{background:#6aaa64;color:#fff}
+.w.present{background:#c9b458;color:#fff}
+.w.contains{background:#de6e52d8;color:#fff}
+.w.absent{background:#787c7e;color:#fff}
+#timer{font-size:1.6rem;margin:8px 0}
+table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px solid #ddd}
+
+/* How to play */
+#help{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px;box-sizing:border-box;z-index:10}
+#help.open{display:flex}
+.card{background:#fff;color:#111;width:100%;max-width:440px;border-radius:12px;padding:20px;box-sizing:border-box;text-align:left;box-shadow:0 8px 30px rgba(0,0,0,.25);position:relative;margin:auto 0}
+.card h2{margin:0 0 4px;font-size:1.5rem}
+.card p{margin:6px 0}
+.card ul{padding-left:20px;margin:8px 0}
+.card li{margin:4px 0;font-size:.95rem}
+.card .example{margin:14px 0 4px}
+.card .example .row{justify-content:flex-start}
+.card .example small{display:block;margin-top:4px;font-size:.9rem}
+.card hr{border:none;border-top:1px solid #ddd;margin:14px 0}
+#helpClose{position:absolute;top:8px;right:12px;width:auto;background:none;border:none;font-size:1.6rem;cursor:pointer;padding:4px 8px;margin:0}
+#helpAction{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+#helpBtn {display:none;flex:3;background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor: pointer;}
+#guessBtn {flex:7;background:#6aaa64;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer;}
+.button-container {width:100%;gap:8px;display: flex /* 30 70 split for the buttons */;}
+#hideHelpRow{display:flex;align-items:center;gap:8px;font-size:.95rem;margin:8px 0;cursor:pointer}
+#hideHelp{width:auto;margin:0}
+#showHelpBtn{background:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer}
+</style>
+
+<h2>Picture Saying</h2>
+
+<div id="timer"></div>
+<img id="pic" src="/image">
+<div id="play" style="display:none">
+<p>{{ word_count }} words</p>
+<input id="guess" placeholder="Type the saying" onkeydown="if(event.key==='Enter')sendGuess()">
+<div class="button-container">
+    <button id="helpBtn" onclick="openHelp(false)">How to play</button>
+    <button id="guessBtn" onclick="sendGuess()">Guess</button>
+</div>
+<div id="history"></div>
+</div>
+<h3>Today's leaderboard</h3>
+<table id="board"></table>
+
+<!-- How to play: shown before the game starts, and from the button during the game -->
+<div id="help">
+  <div class="card">
+    <button id="helpClose" onclick="closeHelp()" aria-label="Close" style="display:none">&times;</button>
+
+    <!-- Short version, shown when the player chose to hide the instructions -->
+    <div id="compactIntro" style="display:none">
+      <h2>Ready to play?</h2>
+      <p>Enter your name, then press Start Guessing.</p>
+      <button id="showHelpBtn" onclick="expandHelp()">Show How To Play</button>
     </div>
-    <div id="timer"></div>
-    <img id="pic" src="/image">
-    <div id="play" style="display:none">
-    <p>{{ word_count }} words</p>
-    <input id="guess" placeholder="Type the saying" onkeydown="if(event.key==='Enter')sendGuess()">
-    <button onclick="sendGuess()">Guess</button>
-    <div id="history"></div>
+
+    <div id="helpBody">
+    <h2>How To Play</h2>
+    <p>Guess the phrase or saying shown in the picture.</p>
+    <p>The answer can be a phrase, saying, movie, song, celebrity name, ect; from hereon refered to as "saying".</p>
+    <ul>
+      <li>The picture is a puzzle for a saying . The number of words is shown above the guess box.</li>
+      <li>Capital letters and punctuation don't matter.</li>
+      <li>The colour of each word changes after a guess to show how close you are, orange -> green.</li>
+      <li>The timer starts when you press <b>Start Guessing</b> and only stops when you get the saying right, you cannot quit. Reading this page while playing does not pause the timer.</li>
+    </ul>
+
+    <p><b>Examples</b> (if the saying is "Pink slip")</p>
+
+    <div class="example">
+      <div class="row"><span class="w ok">pink</span><span class="w absent">bag</span></div>
+      <small><b>Pink</b> is in the saying and in the correct spot. <b>Bag</b> is not in the saying.</small>
     </div>
-    <h3>Today's leaderboard</h3>
-    <table id="board"></table>
+    <div class="example">
+      <div class="row"><span class="w present">slip</span><span class="w present">pink</span></div>
+      <small>Both words are in the saying but in the wrong spot.</small>
+    </div>
+    <div class="example">
+      <div class="row"><span class="w ok">pink</span><span class="w contains">slippery</span></div>
+      <small><b>Slippery</b> contains a word from the saying (slip), but it isn't the exact word. 3+ characters.</small>
+    </div>
+    <div class="example">
+      <div class="row"><span class="w absent">slippery</span><span class="w ok">slip</span></div>
+      <div class="row"><span class="w ok">pink</span><span class="w absent">pink</span></div>
+      <small>Duplicate words are counted only once</small>
+    </div>
+    </div><!-- /helpBody -->
 
-    <script>
-    let startMs = null, ticker = null;
-    const $ = id => document.getElementById(id);
+    <hr>
+    <label id="hideHelpRow">
+      <input type="checkbox" id="hideHelp" onchange="saveSetting('hideHowToPlay', this.checked)">
+      Don't show the instructions when I start
+    </label>
+    <div id="nameRow">
+      <input id="name" placeholder="Your name" maxlength="20" onkeydown="if(event.key==='Enter')helpAction()">
+    </div>
+    <button id="helpAction" onclick="helpAction()">Start Guessing</button>
+  </div>
+</div>
 
-    async function post(url, body){
-    const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    return r.json();
-    }
-    function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
+<script>
+let startMs = null, ticker = null, gameStarted = false;
+const $ = id => document.getElementById(id);
 
-    async function startGame(){
-    const data = await post('/start',{name:$('name').value});
-    if(data.error){ alert(data.error); return; }
-    startMs = Date.now() - data.elapsed*1000;   // resume if page refreshed
-    ticker = setInterval(tick, 100);
-    $('setup').style.display='none'; $('pic').style.display='block'; $('play').style.display='block';
-    }
-    async function sendGuess(){
-    const g = $('guess').value; if(!g.trim()) return;
-    const data = await post('/guess',{guess:g});
-    if(data.error){ alert(data.error); return; }
-    if(data.correct){
-        clearInterval(ticker);
-        $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
-        $('play').style.display='none'; loadBoard(); return;
-    }
-    const row = document.createElement('div'); row.className='row';
-    data.words.forEach((w,i)=>{
-        const s=document.createElement('span');
-        s.className='w ' + data.hints[i];
-        s.textContent=w; row.appendChild(s);
-    });
-    $('history').prepend(row); $('guess').value='';
-    }
-    function formatTime(totalSeconds) {
-    const total = Math.round(totalSeconds);
-    const hours = Math.floor(total / 3600);
-    const minutes = Math.floor((total % 3600) / 60);
-    const seconds = total % 60;
+async function post(url, body){
+const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+return r.json();
+}
+function tick(){ $('timer').textContent = formatTime(((Date.now()-startMs)/1000).toFixed(1)); }
 
-    const pad = n => String(n).padStart(2, '0');
-    return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
-    }
+// ---- Settings (saved in this browser's localStorage) ----
+const SETTINGS_KEY = 'pictureSaying.settings';
+const DEFAULT_SETTINGS = { hideHowToPlay: false };
 
-    async function loadBoard(){
-    const rows = await (await fetch('/leaderboard')).json();
-    $('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
-        rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
-    }
-    loadBoard();
-    </script>
-</html>
+function loadSettings(){
+  try {
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+  } catch(e) { return { ...DEFAULT_SETTINGS }; }   // storage blocked or corrupted: use defaults
+}
+function saveSetting(key, value){
+  try {
+    const settings = loadSettings();
+    settings[key] = value;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch(e) {}                                    // storage blocked (e.g. private mode): ignore
+}
+
+// ---- How to play ----
+function openHelp(beforeStart, compact){
+  // beforeStart = true: first visit (name box + Start Guessing, cannot be closed)
+  // beforeStart = false: opened mid-game (just a Close button, timer keeps running)
+  // compact = true: skip the instructions (player chose to hide them) but keep name + Start
+  $('helpBody').style.display = compact ? 'none' : 'block';
+  $('compactIntro').style.display = compact ? 'block' : 'none';
+  $('hideHelp').checked = loadSettings().hideHowToPlay;
+  $('hideHelpRow').style.display = beforeStart ? 'block' : 'none';
+  $('nameRow').style.display = beforeStart ? 'block' : 'none';
+  $('helpClose').style.display = beforeStart ? 'none' : 'block';
+  $('helpAction').textContent = beforeStart ? 'Start Guessing' : 'Back to game';
+  $('help').classList.add('open');
+  if (beforeStart) $('name').focus();
+}
+function closeHelp(){ $('help').classList.remove('open'); }
+function expandHelp(){                       // "Show How To Play" in the short version
+  $('helpBody').style.display = 'block';
+  $('compactIntro').style.display = 'none';
+}
+function helpAction(){
+  if (gameStarted) closeHelp(); else startGame();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && gameStarted) closeHelp();
+});
+
+// Show the game UI and start the on-screen clock from `elapsedSeconds`
+function beginPlay(elapsedSeconds){
+startMs = Date.now() - elapsedSeconds*1000;
+ticker = setInterval(tick, 100);
+tick();
+gameStarted = true;
+closeHelp();
+$('pic').style.display='block'; $('play').style.display='block'; $('helpBtn').style.display='block';
+}
+
+async function startGame(){
+const data = await post('/start',{name:$('name').value});
+if(data.error){ alert(data.error); return; }
+beginPlay(data.elapsed);   // elapsed > 0 if they had already started (resume)
+}
+
+// On page load: carry on where the player left off instead of showing How To Play again
+async function init(){
+loadBoard();
+let state = {started:false, done:false, name:'', elapsed:0};
+try { state = await (await fetch('/state')).json(); } catch(e) {}
+
+if (state.done) {                    // already solved today's puzzle
+  $('timer').textContent = "You've already finished today's puzzle. Come back tomorrow!";
+  return;
+}
+if (state.started) {                 // refreshed mid-game: skip How To Play, timer keeps counting
+  beginPlay(state.elapsed);
+  return;
+}
+$('name').value = state.name || '';  // new visitor (or a new day): show How To Play first
+openHelp(true, loadSettings().hideHowToPlay);   // ...unless they chose to hide it
+}
+async function sendGuess(){
+const g = $('guess').value; if(!g.trim()) return;
+const data = await post('/guess',{guess:g});
+if(data.error){ alert(data.error); return; }
+if(data.correct){
+    clearInterval(ticker);
+    $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
+    $('play').style.display='none'; loadBoard(); return;
+}
+const row = document.createElement('div'); row.className='row';
+data.words.forEach((w,i)=>{
+    const s=document.createElement('span');
+    s.className='w ' + data.hints[i];
+    s.textContent=w; row.appendChild(s);
+});
+$('history').prepend(row); $('guess').value='';
+}
+function formatTime(totalSeconds) {
+const total = Math.round(totalSeconds);
+const hours = Math.floor(total / 3600);
+const minutes = Math.floor((total % 3600) / 60);
+const seconds = total % 60;
+
+const pad = n => String(n).padStart(2, '0');
+return `${pad(hours)}h ${pad(minutes)}min ${pad(seconds)}s`;
+}
+
+async function loadBoard(){
+const rows = await (await fetch('/leaderboard')).json();
+$('board').innerHTML = '<tr><th>#</th><th>Name</th><th>Time</th><th>Guesses</th></tr>' +
+    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${formatTime(r.seconds)}</td><td>${r.guesses}</td></tr>`).join('');
+}
+init();
+</script>
