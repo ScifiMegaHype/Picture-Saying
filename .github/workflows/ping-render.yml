@@ -2,8 +2,8 @@ name: Pings render web service to keep service awake
 
 on:
   schedule:
-    - cron: "*/13 * * * *"
-  workflow_dispatch:   
+    - cron: "*/9 * * * *"
+  workflow_dispatch:
 
 jobs:
   ping:
