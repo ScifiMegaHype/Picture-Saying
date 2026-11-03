@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 <div id="timer"></div>
 <img id="pic" src="/image">
 <div id="play" style="display:none" data-words="{{ word_count }}">
-<p>{{ word_count }} words</p>
+<p>{{ word_count }} words and/or articles</p>
 <input id="guess" placeholder="Type the saying" oninput="limitWords(this, maxGuessWords, maxGuessChars)" onkeydown="if(event.key==='Enter')sendGuess()">
 <div class="button-container">
     <button id="helpBtn" onclick="openHelp(false)">How to play</button>
