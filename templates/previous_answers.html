@@ -1,0 +1,53 @@
+<!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Picture Saying</title>
+<style>
+    body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 16px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .top-bar {text-align:center; }
+    #todaysPuzzleBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;padding:10px 16px}
+
+    /* a 3x3 grid */
+    .answer-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        max-width: 960px;
+        margin: 16px auto;
+        padding: 0;
+        list-style: none;
+    }
+    .answer-list li {
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        padding: 8px;
+        text-align: center;
+        font-size: .9rem;
+    }
+    .answer-list img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 5;       /* puzzle images are 1600x500 */
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 6px;
+    }
+</style>
+<h1>Previous Answers</h1>
+<div class="top-bar">
+    <button id="todaysPuzzleBtn" onclick="window.location.href='/'">Back to Today's Puzzle</button>
+</div>
+<ul class="answer-list">
+    {% for date, answer in shown_answers %}
+        <li>
+            <img src="/image?date={{ date }}" alt="Puzzle for {{ date }}">
+            {{ date }}<br><b>{{ answer }}</b>
+        </li>
+    {% endfor %}
+</ul>

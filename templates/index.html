@@ -28,13 +28,17 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 .card hr{border:none;border-top:1px solid #ddd;margin:14px 0}
 #helpClose{position:absolute;top:8px;right:12px;width:auto;background:none;border:none;font-size:1.6rem;cursor:pointer;padding:4px 8px;margin:0}
 #helpAction{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-#helpBtn {display:none;flex:3;background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor: pointer;}
-#guessBtn {flex:7;background:#6aaa64;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer;}
+#helpBtn{display:none;flex:3;background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor: pointer;}
+#guessBtn{flex:7;background:#6aaa64;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer;}
 .button-container {width:100%;gap:8px;display: flex /* 30 70 split for the buttons */;}
 #hideHelpRow{display:flex;align-items:center;gap:8px;font-size:.95rem;margin:8px 0;cursor:pointer}
 #hideHelp{width:auto;margin:0}
 #showHelpBtn{background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer}
+.result-row{display:flex;gap:8px;margin:8px 0}
+#previousAnswersBox{flex:4}   /* 40% on the left */
+#shareBox{flex:6}             /* 60% on the right */
 #shareBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+#previousAnswersBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;padding:10px 16px}
 </style>
 
 <h2>Picture Saying</h2>
@@ -50,8 +54,13 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 </div>
 <div id="history"></div>
 </div>
-<div id="shareBox" style="display:none">
-<button id="shareBtn" onclick="copyResult()">Copy result</button>
+<div class="result-row">
+    <div id="previousAnswersBox" style="display:none">
+        <button id="previousAnswersBtn" onclick="window.location.href='/previous_answers'">Previous Answers</button>
+    </div>
+    <div id="shareBox" style="display:none">
+        <button id="shareBtn" onclick="copyResult()">Copy result</button>
+    </div>
 </div>
 <h3>Today's leaderboard</h3>
 <table id="board"></table>
@@ -108,7 +117,10 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
     <div id="nameRow">
       <input id="name" placeholder="Your name" maxlength="20" onkeydown="if(event.key==='Enter')helpAction()">
     </div>
-    <button id="helpAction" onclick="helpAction()">Start Guessing</button>
+    <div class="button-container">
+      <button id="previousAnswersBtn" onclick="window.location.href='/previous_answers'">Previous Answers</button>
+      <button id="helpAction" onclick="helpAction()">Start Guessing</button>
+    </div>
   </div>
 </div>
 
@@ -198,6 +210,7 @@ if (state.max_chars) maxGuessChars = state.max_chars;
 
 if (state.done) {                    // already solved today's puzzle
   $('timer').textContent = "You've already finished today's puzzle. Come back tomorrow!";
+  $('previousAnswersBox').style.display = 'block';
   return;
 }
 if (state.started) {                 // refreshed mid-game: skip How To Play, timer keeps counting
@@ -247,6 +260,7 @@ if(data.correct){
     $('play').style.display='none'; loadBoard();
     buildShareText(data.guesses, data.seconds);
     $('shareBox').style.display='block';
+    $('previousAnswersBox').style.display='block';
     return;
 }
 addGuessRow(data.words, data.hints);
