@@ -30,10 +30,10 @@ PUZZLES = { # Server date is used
     "2026-11-05": {"image": "2026-11-05.png", "answer": "Plot Twist"},
     "2026-11-06": {"image": "2026-11-06.png", "answer": "Internet Explorer"},
     "2026-11-07": {"image": "2026-11-07.png", "answer": "Try to understand"},
-    "2026-11-08": {"image": "2026-11-07.png", "answer": "Condescending"},
-    "2026-11-09": {"image": "2026-11-07.png", "answer": "Fall in line"},
-    "2026-11-10": {"image": "2026-11-07.png", "answer": "one step forward two steps back"},
-    "2026-11-11": {"image": "2026-11-07.png", "answer": "For instance"},
+    "2026-11-08": {"image": "2026-11-08.png", "answer": "Condescending"},
+    "2026-11-09": {"image": "2026-11-09.png", "answer": "Fall in line"},
+    "2026-11-10": {"image": "2026-11-10.png", "answer": "one step forward two steps back"},
+    "2026-11-11": {"image": "2026-11-11.png", "answer": "For instance"},
 }
 FALLBACK_DATE = "2026-11-02"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
@@ -125,9 +125,22 @@ def index():
 def health():
     return "ok"
 
+@app.route("/previous_answers")
+def previous_answers():
+    key = today_key()
+    shown_answers = []
+    for date_key in sorted(PUZZLES.keys()): 
+        if key > date_key:  # only show past puzzles, not today or future
+            shown_answers.append((date_key, PUZZLES[date_key]["answer"]))
+    return render_template("previous_answers.html", shown_answers=shown_answers[-9:][::-1]) # show last 9 previous answers
+
 @app.route("/image")
 def image():
-    return send_from_directory(IMAGE_DIR, PUZZLES[today_key()]["image"])
+    requested = request.args.get("date")                    # e.g. /image?date=2026-11-01
+    puzzle_key = requested if requested in PUZZLES else today_key()
+    if puzzle_key > today_key():                            # never reveal a future puzzle
+        puzzle_key = today_key()
+    return send_from_directory(IMAGE_DIR, PUZZLES[puzzle_key]["image"])
 
 @app.route("/state")
 def state():
