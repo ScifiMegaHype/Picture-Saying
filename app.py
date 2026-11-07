@@ -30,8 +30,12 @@ PUZZLES = { # Server date is used
     "2026-11-05": {"image": "2026-11-05.png", "answer": "Plot Twist"},
     "2026-11-06": {"image": "2026-11-06.png", "answer": "Internet Explorer"},
     "2026-11-07": {"image": "2026-11-07.png", "answer": "Try to understand"},
+    "2026-11-08": {"image": "2026-11-07.png", "answer": "Condescending"},
+    "2026-11-09": {"image": "2026-11-07.png", "answer": "Fall in line"},
+    "2026-11-10": {"image": "2026-11-07.png", "answer": "one step forward two steps back"},
+    "2026-11-11": {"image": "2026-11-07.png", "answer": "For instance"},
 }
-FALLBACK_DATE = "2026-10-29"  # used if today has no puzzle yet
+FALLBACK_DATE = "2026-11-02"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
 
 CORRECT = "ok"          # green
