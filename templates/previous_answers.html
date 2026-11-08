@@ -29,12 +29,17 @@
         padding: 8px;
         text-align: center;
         font-size: .9rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;   /* centers the picture and text vertically in the card */
+        align-items: center;
     }
     .answer-list img {
         display: block;
         width: 100%;
-        aspect-ratio: 16 / 5;       /* puzzle images are 1600x500 */
+        aspect-ratio: 16 / 5;
         object-fit: contain;
+        object-position: center;   /* centers the picture inside its own frame, both ways */
         border-radius: 8px;
         margin-bottom: 6px;
     }
