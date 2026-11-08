@@ -34,11 +34,15 @@ table{width:100%;border-collapse:collapse} td,th{padding:4px;border-bottom:1px s
 #hideHelpRow{display:flex;align-items:center;gap:8px;font-size:.95rem;margin:8px 0;cursor:pointer}
 #hideHelp{width:auto;margin:0}
 #showHelpBtn{background:#aed951;color:#fff;border:1px solid #bbb;border-radius:8px;cursor:pointer}
+#shareBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+#previousAnswersBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+
 .result-row{display:flex;gap:8px;margin:8px 0}
 #previousAnswersBox{flex:4}   /* 40% on the left */
 #shareBox{flex:6}             /* 60% on the right */
-#shareBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-#previousAnswersBtn{background:#6aaa64;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;padding:10px 16px}
+#previousAnswersBox{flex:4}
+#shareBox{flex:6}
+#previousAnswersBox button, #shareBtn{flex:1;margin:0}
 </style>
 
 <h2>Picture Saying</h2>
@@ -259,8 +263,8 @@ if(data.correct){
     $('timer').textContent = 'Solved in ' + formatTime(data.seconds) + ' (' + data.guesses + ' guesses)';
     $('play').style.display='none'; loadBoard();
     buildShareText(data.guesses, data.seconds);
-    $('shareBox').style.display='block';
-    $('previousAnswersBox').style.display='block';
+    $('shareBox').style.display='flex';
+    $('previousAnswersBox').style.display='flex';
     return;
 }
 addGuessRow(data.words, data.hints);
