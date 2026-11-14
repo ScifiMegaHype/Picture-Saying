@@ -10,8 +10,8 @@ from psycopg.rows import dict_row
 from flask import Flask, jsonify, render_template, request, send_from_directory, session
 
 # When running locally
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 DATABASE_URL = os.environ["DATABASE_URL"]  # Neon connection string
