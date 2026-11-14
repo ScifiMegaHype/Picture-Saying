@@ -35,8 +35,23 @@ PUZZLES = { # Server date is used
     "2026-11-14": {"image": "2026-11-14.png", "answer": "Fall in line"},
     "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back"},
     "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT"},
+    "2026-11-17": {"image": "2026-11-17.png", "answer": "Raining cats and dogs"},
+    "2026-11-18": {"image": "2026-11-18.png", "answer": "Piece of cake"},
+    "2026-11-19": {"image": "2026-11-19.png", "answer": "A watched pot never boils"},
+    "2026-11-20": {"image": "2026-11-20.png", "answer": "Dont put all your eggs in one basket"},
+    "2026-11-21": {"image": "2026-11-21.png", "answer": "Couch potato"},
+    "2026-11-22": {"image": "2026-11-22.png", "answer": "Dont count your chickens before they hatch"},
+    "2026-11-23": {"image": "2026-11-23.png", "answer": "Cardi B"},
+    "2026-11-24": {"image": "2026-11-24.png", "answer": "Bill Gates"},
+    "2026-11-25": {"image": "2026-11-25.png", "answer": "Time flies"},
+    "2026-11-26": {"image": "2026-11-26.png", "answer": "Black sheep"},
+    "2026-11-27": {"image": "2026-11-27.png", "answer": "Brad Pitt"},
+    "2026-11-28": {"image": "2026-11-28.png", "answer": "Spilling the beans"},
+    "2026-11-29": {"image": "2026-11-29.png", "answer": "Elton John"},
+    "2026-11-30": {"image": "2026-11-30.png", "answer": "Barking up the wrong tree"},
+
 }
-FALLBACK_DATE = "2026-11-02"  # used if today has no puzzle yet
+FALLBACK_DATE = "2026-11-15"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
 
 CORRECT = "ok"          # green
