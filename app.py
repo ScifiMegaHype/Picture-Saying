@@ -10,8 +10,8 @@ from psycopg.rows import dict_row
 from flask import Flask, jsonify, render_template, request, send_from_directory, session
 
 # When running locally
-# from dotenv import load_dotenv
-# load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 DATABASE_URL = os.environ["DATABASE_URL"]  # Neon connection string
@@ -31,9 +31,10 @@ PUZZLES = { # Server date is used
     "2026-11-06": {"image": "2026-11-06.png", "answer": "Internet Explorer"},
     "2026-11-07": {"image": "2026-11-07.png", "answer": "Try to understand"},
     "2026-11-08": {"image": "2026-11-08.png", "answer": "Condescending"},
-    "2026-11-09": {"image": "2026-11-09.png", "answer": "Fall in line"},
-    "2026-11-10": {"image": "2026-11-10.png", "answer": "one step forward two steps back"},
     "2026-11-11": {"image": "2026-11-11.png", "answer": "For instance"},
+    "2026-11-14": {"image": "2026-11-14.png", "answer": "Fall in line"},
+    "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back"},
+    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT"},
 }
 FALLBACK_DATE = "2026-11-02"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
