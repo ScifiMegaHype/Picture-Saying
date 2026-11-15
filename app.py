@@ -10,8 +10,8 @@ from psycopg.rows import dict_row
 from flask import Flask, jsonify, render_template, request, send_from_directory, session
 
 # When running locally
-# from dotenv import load_dotenv
-# load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
 DATABASE_URL = os.environ["DATABASE_URL"]  # Neon connection string
@@ -33,24 +33,26 @@ PUZZLES = { # Server date is used
     "2026-11-08": {"image": "2026-11-08.png", "answer": "Condescending"},
     "2026-11-11": {"image": "2026-11-11.png", "answer": "For instance"},
     "2026-11-14": {"image": "2026-11-14.png", "answer": "Fall in line"},
-    "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back"},
-    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT"},
+    "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back", "input-hints": ["What do we say when you progress then regress?"]},
+    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT", "input-hints": ["Convert to physics formulas", "Where did Howard Wolowitz go to school?"]},
     "2026-11-17": {"image": "2026-11-17.png", "answer": "Raining cats and dogs"},
     "2026-11-18": {"image": "2026-11-18.png", "answer": "Piece of cake"},
-    "2026-11-19": {"image": "2026-11-19.png", "answer": "A watched pot never boils"},
+    "2026-11-19": {"image": "2026-11-19.png", "answer": "A watched pot never boils", "input-hints": ["Two things are happening to the pot", "The pot is being observed so it doesnt?"]},
     "2026-11-20": {"image": "2026-11-20.png", "answer": "Dont put all your eggs in one basket"},
     "2026-11-21": {"image": "2026-11-21.png", "answer": "Couch potato"},
     "2026-11-22": {"image": "2026-11-22.png", "answer": "Dont count your chickens before they hatch"},
-    "2026-11-23": {"image": "2026-11-23.png", "answer": "Cardi B"},
+    "2026-11-23": {"image": "2026-11-23.png", "answer": "Cardi B", "input-hints": ["I am a famous rapper", "Bodak Yellow"]},
     "2026-11-24": {"image": "2026-11-24.png", "answer": "Bill Gates"},
     "2026-11-25": {"image": "2026-11-25.png", "answer": "Time flies"},
     "2026-11-26": {"image": "2026-11-26.png", "answer": "Black sheep"},
-    "2026-11-27": {"image": "2026-11-27.png", "answer": "Brad Pitt"},
+    "2026-11-27": {"image": "2026-11-27.png", "answer": "Brad Pitt", "input-hints": ["What is inside a most fruit?", "I am an actor"]},
     "2026-11-28": {"image": "2026-11-28.png", "answer": "Spilling the beans"},
     "2026-11-29": {"image": "2026-11-29.png", "answer": "Elton John"},
     "2026-11-30": {"image": "2026-11-30.png", "answer": "Barking up the wrong tree"},
     "2026-12-01": {"image": "2026-12-01.png", "answer": "Cold shoulder"},
-    "2026-12-02": {"image": "2026-12-02.png", "answer": "The Nile River"},
+    "2026-12-02": {"image": "2026-12-02.png", "answer": "The Nile River", "input-hints": ["What is the player doing?", "The player is in denial. Last card on a poker table?"]},
+    "2026-12-03": {"image": "2026-12-03.png", "answer": "Daniel Radcliffe", "input-hints": ["What is Dan doing?", "I was once a young wizard"]},
+    "2026-12-04": {"image": "2026-12-04.png", "answer": "When days are dark friends are few"},
 }
 FALLBACK_DATE = "2026-11-15"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
@@ -210,6 +212,14 @@ def guess():
 
     session["guesses_" + key] += 1
 
+    input_hint = None
+    if session["guesses_" + key] >= 5:
+        temp = PUZZLES.get(key, {}).get("input-hints", [])
+        input_hint = temp[0] if temp else None
+    if session["guesses_" + key] >= 10:
+        temp = PUZZLES.get(key, {}).get("input-hints", [])
+        input_hint = temp[1] if temp and len(temp) > 1 else input_hint
+
     # Wordle-style hint: which word positions are right
     hints = score_guess(guess_words, answer_words)
 
@@ -231,9 +241,9 @@ def guess():
                 "INSERT INTO scores (puzzle_date, name, seconds, guesses) VALUES (%s, %s, %s, %s)",
                 (key, str(session["name"])+str(randint(9999, 99999)), seconds, session["guesses_" + key]),
             )
-        return jsonify(correct=True, seconds=seconds, guesses=session["guesses_" + key], hints=hints, words=guess_words,)
+        return jsonify(correct=True, seconds=seconds, guesses=session["guesses_" + key], hints=hints, words=guess_words)
 
-    return jsonify(correct=False, hints=hints, words=guess_words)
+    return jsonify(correct=False, hints=hints, words=guess_words, guesses=session["guesses_" + key], input_hint=input_hint)
 
 @app.route("/leaderboard")
 def leaderboard():

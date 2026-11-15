@@ -267,6 +267,8 @@ if(data.correct){
 }
 addGuessRow(data.words, data.hints);
 $('guess').value='';
+$('guess').placeholder = data.input_hint || 'Type the saying';
+$('guess').focus();
 }
 // ---- Share ----
 // Same as formatTime but leaves out the hours when they are zero: "01min 42s"
