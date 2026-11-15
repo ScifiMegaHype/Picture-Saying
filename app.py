@@ -34,7 +34,7 @@ PUZZLES = { # Server date is used
     "2026-11-11": {"image": "2026-11-11.png", "answer": "For instance"},
     "2026-11-14": {"image": "2026-11-14.png", "answer": "Fall in line"},
     "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back", "input-hints": ["What do we say when you progress then regress?"]},
-    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT", "input-hints": ["Convert to physics formulas", "Where did Howard Wolowitz go to school?"]},
+    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT", "input-hints": ["Relates to physics formulas and a school", "Where did Howard Wolowitz go to school?"]},
     "2026-11-17": {"image": "2026-11-17.png", "answer": "Raining cats and dogs"},
     "2026-11-18": {"image": "2026-11-18.png", "answer": "Piece of cake"},
     "2026-11-19": {"image": "2026-11-19.png", "answer": "A watched pot never boils", "input-hints": ["Two things are happening to the pot", "The pot is being observed so it doesnt?"]},
