@@ -49,7 +49,8 @@ PUZZLES = { # Server date is used
     "2026-11-28": {"image": "2026-11-28.png", "answer": "Spilling the beans"},
     "2026-11-29": {"image": "2026-11-29.png", "answer": "Elton John"},
     "2026-11-30": {"image": "2026-11-30.png", "answer": "Barking up the wrong tree"},
-
+    "2026-12-01": {"image": "2026-12-01.png", "answer": "Cold shoulder"},
+    "2026-12-02": {"image": "2026-12-02.png", "answer": "The Nile River"},
 }
 FALLBACK_DATE = "2026-11-15"  # used if today has no puzzle yet
 # -------------------------------------------------------------------------
