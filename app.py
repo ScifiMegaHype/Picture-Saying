@@ -34,7 +34,7 @@ PUZZLES = { # Server date is used
     "2026-11-11": {"image": "2026-11-11.png", "answer": "For instance"},
     "2026-11-14": {"image": "2026-11-14.png", "answer": "Fall in line"},
     "2026-11-15": {"image": "2026-11-15.png", "answer": "one step forward two steps back", "input-hints": ["What do we say when you progress then regress?"]},
-    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT", "input-hints": ["Relates to physics formulas and a school", "Where did Howard Wolowitz go to school?"]},
+    "2026-11-16": {"image": "2026-11-16.png", "answer": "MIT", "input-hints": ["Relates to formulas and a school", "Which school did Howard Wolowitz go to?"]},
     "2026-11-17": {"image": "2026-11-17.png", "answer": "Raining cats and dogs"},
     "2026-11-18": {"image": "2026-11-18.png", "answer": "Piece of cake"},
     "2026-11-19": {"image": "2026-11-19.png", "answer": "A watched pot never boils", "input-hints": ["Two things are happening to the pot", "The pot is being observed so it doesnt?"]},
@@ -50,7 +50,7 @@ PUZZLES = { # Server date is used
     "2026-11-29": {"image": "2026-11-29.png", "answer": "Elton John"},
     "2026-11-30": {"image": "2026-11-30.png", "answer": "Barking up the wrong tree"},
     "2026-12-01": {"image": "2026-12-01.png", "answer": "Cold shoulder"},
-    "2026-12-02": {"image": "2026-12-02.png", "answer": "The Nile River", "input-hints": ["What is the player doing?", "The player is in denial. Last card on a poker table?"]},
+    "2026-12-02": {"image": "2026-12-02.png", "answer": "The Nile River", "input-hints": ["The player is in ...?", "Last card on a poker table?"]},
     "2026-12-03": {"image": "2026-12-03.png", "answer": "Daniel Radcliffe", "input-hints": ["What is Dan doing?", "I was once a young wizard"]},
     "2026-12-04": {"image": "2026-12-04.png", "answer": "When days are dark friends are few"},
 }
